@@ -2,6 +2,10 @@ import { useEffect, useRef, useState } from "react";
 import "./App.css";
 import InputEmocao from "./components/SearchForm";
 
+// Import THREE synchronously and make it globally available
+import * as THREE from "three";
+(window as any).THREE = THREE;
+
 function App() {
   const [emocao, setEmocao] = useState("");
   const [results, setResults] = useState([]);
@@ -12,11 +16,7 @@ function App() {
   const vantaRef = useRef<any>(null);
   useEffect(() => {
     const initVanta = async () => {
-      // @ts-ignore
-      const THREE = (await import("three")).default;
-      // Make THREE globally available for Vanta
-      (window as any).THREE = THREE;
-
+      // THREE is already imported and globally available at the top
       const GLOBE = (await import("vanta/dist/vanta.globe.min")).default;
       const bgElement = document.getElementById("vanta-bg");
       if (!bgElement || vantaRef.current) {
