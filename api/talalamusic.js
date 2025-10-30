@@ -45,7 +45,7 @@ export default async function handler(req, res) {
         params: {
           q: emocao,
           type: "track",
-          limit: 10,
+          limit: 12,
         },
       }
     );

@@ -308,7 +308,7 @@ function App() {
                   encontrada{results.length > 1 ? "s" : ""}
                 </p>
               </div>
-              <div className="grid sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {results.map((track: any) => {
                   const spotifyEmbedUrl = `https://open.spotify.com/embed/track/${track.id}?utm_source=generator&theme=0`;
                   const spotifyTrackLink =
