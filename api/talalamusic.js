@@ -132,14 +132,14 @@ export default async function handler(req, res) {
     const allTracks = [];
     const usedTrackIds = new Set();
 
-    // Primeiro busca pela emoção exata
+    // Primeiro busca pela emoção exata (músicas recentes)
     try {
       const mainSearchResponse = await axios.get(
         "https://api.spotify.com/v1/search",
         {
           headers: { Authorization: `Bearer ${access_token}` },
           params: {
-            q: emocao,
+            q: `${emocao} year:2020-2025`,
             type: "track",
             limit: 20,
           },
@@ -167,7 +167,7 @@ export default async function handler(req, res) {
           {
             headers: { Authorization: `Bearer ${access_token}` },
             params: {
-              q: term,
+              q: `${term} year:2020-2025`,
               type: "track",
               limit: 15,
             },
