@@ -14,6 +14,9 @@ function App() {
     const initVanta = async () => {
       // @ts-ignore
       const THREE = (await import("three")).default;
+      // Make THREE globally available for Vanta
+      (window as any).THREE = THREE;
+
       const GLOBE = (await import("vanta/dist/vanta.globe.min")).default;
       const bgElement = document.getElementById("vanta-bg");
       if (!bgElement || vantaRef.current) {
