@@ -12,18 +12,23 @@ function App() {
   const vantaRef = useRef<any>(null);
   useEffect(() => {
     const initVanta = async () => {
-      // @ts-ignore
-      const THREE = (await import("three")).default;
-      // Make THREE globally available for Vanta
-      (window as any).THREE = THREE;
-
-      const GLOBE = (await import("vanta/dist/vanta.globe.min")).default;
-      const bgElement = document.getElementById("vanta-bg");
-      if (!bgElement || vantaRef.current) {
-        return;
-      }
-
       try {
+        // Import THREE first and make it globally available immediately
+        const THREE = await import("three");
+        (window as any).THREE = THREE;
+
+        // Wait a bit to ensure THREE is available
+        await new Promise((resolve) => setTimeout(resolve, 100));
+
+        // Now import Vanta
+        const GLOBE = (await import("vanta/dist/vanta.globe.min")).default;
+
+        const bgElement = document.getElementById("vanta-bg");
+        if (!bgElement || vantaRef.current) {
+          return;
+        }
+
+        console.log("THREE available:", !!(window as any).THREE);
         console.log("GLOBE:", GLOBE);
         vantaRef.current = GLOBE({
           el: bgElement,
