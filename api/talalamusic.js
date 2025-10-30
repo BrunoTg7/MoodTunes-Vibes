@@ -37,20 +37,156 @@ export default async function handler(req, res) {
 
     const access_token = tokenResponse.data.access_token;
 
-    // Busca músicas por emoção
-    const searchResponse = await axios.get(
-      "https://api.spotify.com/v1/search",
-      {
-        headers: { Authorization: `Bearer ${access_token}` },
-        params: {
-          q: emocao,
-          type: "track",
-          limit: 12,
-        },
-      }
-    );
+    // Mapeamento de emoções para termos de busca relacionados
+    const emotionKeywords = {
+      feliz: [
+        "happy",
+        "feliz",
+        "alegre",
+        "joy",
+        "felicidade",
+        "upbeat",
+        "cheerful",
+      ],
+      triste: [
+        "sad",
+        "triste",
+        "tristeza",
+        "melancólico",
+        "depressed",
+        "blue",
+        "down",
+      ],
+      animado: [
+        "energetic",
+        "animado",
+        "excited",
+        "party",
+        "dance",
+        "festa",
+        "high energy",
+      ],
+      relaxado: [
+        "relax",
+        "calm",
+        "relaxado",
+        "chill",
+        "peaceful",
+        "tranquilo",
+        "soft",
+      ],
+      romântico: [
+        "romantic",
+        "romântico",
+        "love",
+        "amor",
+        "romance",
+        "tender",
+        "sweet",
+      ],
+      motivado: [
+        "motivated",
+        "motivado",
+        "inspiration",
+        "inspiração",
+        "motivation",
+        "drive",
+      ],
+      nostálgico: [
+        "nostalgic",
+        "nostálgico",
+        "oldies",
+        "clássicos",
+        "retro",
+        "memories",
+      ],
+      calmo: [
+        "calm",
+        "calmo",
+        "peace",
+        "serene",
+        "tranquil",
+        "soothing",
+        "gentle",
+      ],
+      apaixonado: [
+        "passionate",
+        "apaixonado",
+        "intense",
+        "deep love",
+        "ardent",
+      ],
+      raivoso: ["angry", "raiva", "rage", "furious", "intense", "aggressive"],
+      ansioso: ["anxious", "ansioso", "nervous", "tension", "worry", "stress"],
+      confiante: [
+        "confident",
+        "confiante",
+        "strong",
+        "powerful",
+        "bold",
+        "empowered",
+      ],
+    };
 
-    const tracks = searchResponse.data.tracks.items;
+    // Busca múltiplas vezes com diferentes termos relacionados
+    const allTracks = [];
+    const usedTrackIds = new Set();
+
+    // Primeiro busca pela emoção exata
+    try {
+      const mainSearchResponse = await axios.get(
+        "https://api.spotify.com/v1/search",
+        {
+          headers: { Authorization: `Bearer ${access_token}` },
+          params: {
+            q: emocao,
+            type: "track",
+            limit: 20,
+          },
+        }
+      );
+
+      for (const track of mainSearchResponse.data.tracks.items) {
+        if (!usedTrackIds.has(track.id)) {
+          allTracks.push(track);
+          usedTrackIds.add(track.id);
+        }
+      }
+    } catch (error) {
+      console.log("Erro na busca principal:", error.message);
+    }
+
+    // Busca por termos relacionados em inglês
+    const relatedTerms = emotionKeywords[emocao.toLowerCase()] || [emocao];
+
+    for (const term of relatedTerms.slice(0, 3)) {
+      // Limita a 3 termos para não sobrecarregar
+      try {
+        const relatedSearchResponse = await axios.get(
+          "https://api.spotify.com/v1/search",
+          {
+            headers: { Authorization: `Bearer ${access_token}` },
+            params: {
+              q: term,
+              type: "track",
+              limit: 15,
+            },
+          }
+        );
+
+        for (const track of relatedSearchResponse.data.tracks.items) {
+          if (!usedTrackIds.has(track.id)) {
+            allTracks.push(track);
+            usedTrackIds.add(track.id);
+          }
+        }
+      } catch (error) {
+        console.log(`Erro na busca por "${term}":`, error.message);
+      }
+    }
+
+    // Limita a 50 músicas no total
+    const tracks = allTracks.slice(0, 50);
 
     const resultado = tracks.map((track) => ({
       nome: track.name,
