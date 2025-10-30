@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import * as THREE from "three";
 import "./App.css";
 import InputEmocao from "./components/SearchForm";
 
@@ -14,6 +13,7 @@ function App() {
   useEffect(() => {
     const initVanta = async () => {
       // @ts-ignore
+      const THREE = (await import("three")).default;
       const GLOBE = (await import("vanta/dist/vanta.globe.min")).default;
       const bgElement = document.getElementById("vanta-bg");
       if (!bgElement || vantaRef.current) {
