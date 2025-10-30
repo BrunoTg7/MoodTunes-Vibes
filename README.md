@@ -145,3 +145,4 @@ Este projeto está sob a licença MIT.
 ---
 
 **Desenvolvido com ❤️ para amantes da música**
+# Build fix for Tailwind v4
