@@ -49,6 +49,7 @@ app.get("/talalamusic", async (req, res) => {
       track.album && track.album.images && track.album.images.length > 0
         ? track.album.images[0].url
         : null,
+    preview_url: track.preview_url,
   }));
 
   res.json({

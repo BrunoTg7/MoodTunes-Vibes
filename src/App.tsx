@@ -99,7 +99,7 @@ function App() {
         id="vanta-bg"
         className="fixed inset-0 -z-10 bg-gradient-to-br from-purple-900 to-blue-700"
       ></div>
-      <div className="container mx-auto px-4 py-12 max-w-5xl text-white">
+      <div className="container mx-auto px-4 py-12 max-w-9xl text-white">
         <div className="text-center mb-16 relative h-64">
           {/* Ícones de notas musicais flutuantes */}
           {floatingIcons.map((icon) => (
@@ -222,7 +222,7 @@ function App() {
             Encontre a trilha sonora perfeita para o seu momento
           </p>
         </div>
-        <div className="glass-effect rounded-3xl p-8 shadow-2xl mb-16 transform transition-all hover:scale-105">
+        <div className="glass-effect rounded-3xl p-8 shadow-2xl mb-16 transform transition-all hover:scale-105 max-w-4xl ml-auto mr-auto">
           <div className="mb-6">
             <label>Como você está se sentindo hoje?</label>
             <div className="relative">
@@ -308,7 +308,7 @@ function App() {
                   encontrada{results.length > 1 ? "s" : ""}
                 </p>
               </div>
-              <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+              <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {results.map((track: any) => {
                   const spotifyEmbedUrl = `https://open.spotify.com/embed/track/${track.id}?utm_source=generator&theme=0`;
                   const spotifyTrackLink =
@@ -332,9 +332,9 @@ function App() {
                   return (
                     <div
                       key={track.id}
-                      className="card rounded-2xl p-4 flex flex-col group transition-shadow duration-300 hover:shadow-pink-500/50"
+                      className="card rounded-2xl p-1 flex flex-col group transition-shadow duration-300 hover:shadow-pink-500/50"
                     >
-                      <div className="relative mb-4 overflow-hidden rounded-xl">
+                      <div className="relative mb-2 overflow-hidden rounded-xl">
                         <div
                           className={`absolute inset-0 z-0 opacity-80 ${bgColor}`}
                         ></div>
@@ -354,9 +354,9 @@ function App() {
                             }}
                           />
                           <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
-                            <button className="bg-white rounded-full p-4 shadow-xl transform transition-all duration-300 hover:scale-110 active:scale-90">
+                            <button className="bg-white rounded-full p-2 shadow-xl transform transition-all duration-300 hover:scale-110 active:scale-90">
                               <svg
-                                className="w-8 h-8 text-purple-600"
+                                className="w-6 h-6 text-purple-600"
                                 xmlns="http://www.w3.org/2000/svg"
                                 width="24"
                                 height="24"
@@ -376,10 +376,10 @@ function App() {
                         </a>
                       </div>
                       <div className="flex-grow">
-                        <h3 className="font-bold text-xl mb-0 truncate">
+                        <h3 className="font-bold text-lg mb-0 truncate">
                           {track.nome}
                         </h3>
-                        <p className="text-sm opacity-80 mb-4 truncate">
+                        <p className="text-xs opacity-80 mb-2 truncate">
                           {track.artista}
                         </p>
                       </div>
@@ -387,10 +387,10 @@ function App() {
                         href={spotifyTrackLink}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="w-full mt-auto bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white px-4 py-3 rounded-xl font-bold transition-all transform hover:scale-105 active:scale-95 shadow-md flex items-center justify-center"
+                        className="w-full mt-auto bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white px-3 py-2 rounded-xl font-bold transition-all transform hover:scale-105 active:scale-95 shadow-md flex items-center justify-center"
                       >
                         <svg
-                          className="w-5 h-5 mr-2"
+                          className="w-4 h-4 mr-2"
                           xmlns="http://www.w3.org/2000/svg"
                           width="24"
                           height="24"
@@ -410,11 +410,11 @@ function App() {
                       <iframe
                         src={spotifyEmbedUrl}
                         width="100%"
-                        height="152"
+                        height="120"
                         frameBorder="0"
                         allowTransparency={true}
-                        className="rounded-lg mt-3"
-                        style={{ display: "block", minHeight: "152px" }}
+                        className="rounded-lg mt-2"
+                        style={{ display: "block", minHeight: "120px" }}
                       ></iframe>
                     </div>
                   );

@@ -1,75 +1,115 @@
-# React + TypeScript + Vite
+# 🎶 MoodTunes Vibes
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Uma aplicação web interativa para descobrir músicas perfeitas baseadas no seu humor! Utilizando a API do Spotify e um design moderno com efeitos visuais impressionantes.
 
-Currently, two official plugins are available:
+## ✨ Funcionalidades
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Busca por Emoção**: Digite como você está se sentindo (ex: Feliz, Triste, Animado, Relaxado) e encontre músicas que combinam com seu estado de espírito
+- **Integração com Spotify**: Resultados diretos da API do Spotify com embeds de músicas
+- **Interface Moderna**: Design com efeitos de vidro, gradientes e animações suaves
+- **Fundo 3D Animado**: Background interativo com globo Vanta.js
+- **Ícones Flutuantes**: Notas musicais animadas flutuando na tela
+- **Responsivo**: Funciona perfeitamente em desktop, tablet e mobile
+- **Player Integrado**: Ouça previews das músicas diretamente na aplicação
 
-## React Compiler
+## 🚀 Como Usar
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+1. **Digite sua emoção**: No campo de busca, escreva como você está se sentindo hoje
+2. **Clique em Buscar**: A aplicação encontrará músicas que combinam com seu humor
+3. **Explore os resultados**: Veja capas, artistas e títulos das músicas encontradas
+4. **Ouça as músicas**: Clique nos cards para abrir no Spotify ou use os players integrados
 
-Note: This will impact Vite dev & build performances.
+### Exemplos de Emoções
 
-## Expanding the ESLint configuration
+- Romântico
+- Motivado
+- Nostálgico
+- Calmo
+- Feliz
+- Triste
+- Animado
+- Relaxado
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## 🛠️ Tecnologias Utilizadas
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+- **Frontend**: React 18 + TypeScript + Vite
+- **Styling**: Tailwind CSS com efeitos de vidro e gradientes
+- **Background 3D**: Vanta.js com Three.js
+- **Backend**: Node.js + Express (API proxy para Spotify)
+- **API**: Spotify Web API
+- **Ícones**: Feather Icons + SVGs customizados
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## 📋 Pré-requisitos
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- Node.js (versão 16 ou superior)
+- npm ou yarn
+- Conta no Spotify (para obter Client ID e Secret)
+
+## 🔧 Instalação e Execução
+
+### 1. Clone o repositório
+
+```bash
+git clone https://github.com/BrunoTg7/MoodTunes-Vibes.git
+cd MoodTunes-Vibes
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### 2. Instale as dependências
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
 ```
+
+### 3. Configure as credenciais do Spotify
+
+Crie um arquivo `.env` na raiz do projeto com:
+
+```
+CLIENT_ID=seu_spotify_client_id
+CLIENT_SECRET=seu_spotify_client_secret
+```
+
+### 4. Execute o backend
+
+```bash
+node ApiMusica.js
+```
+
+### 5. Execute o frontend (em outro terminal)
+
+```bash
+npm run dev
+```
+
+### 6. Acesse a aplicação
+
+Abra [http://localhost:5173](http://localhost:5173) no seu navegador
+
+## 🎨 Design e UX
+
+- **Tema**: Gradientes roxo-rosa com elementos musicais
+- **Animações**: Transições suaves, hover effects e ícones flutuantes
+- **Layout**: Grid responsivo que se adapta ao tamanho da tela
+- **Interatividade**: Efeitos de hover, botões animados e players integrados
+
+## 📱 Responsividade
+
+- **Mobile**: 1 coluna de resultados
+- **Tablet**: 2 colunas de resultados
+- **Desktop**: 3 colunas de resultados
+
+## 🔒 Privacidade
+
+A aplicação não armazena dados pessoais. As buscas são processadas em tempo real através da API do Spotify.
+
+## 🤝 Contribuição
+
+Contribuições são bem-vindas! Sinta-se à vontade para abrir issues e pull requests.
+
+## 📄 Licença
+
+Este projeto está sob a licença MIT.
+
+---
+
+**Desenvolvido com ❤️ para amantes da música**
