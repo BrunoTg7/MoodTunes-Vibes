@@ -75,9 +75,9 @@ function App() {
     }
     setLoading(true);
     try {
-      const apiUrl = `http://127.0.0.1:2995/talalamusic?emocao=${encodeURIComponent(
-        emocao
-      )}`;
+      const apiUrl = `${
+        import.meta.env.VITE_API_URL || ""
+      }/api/talalamusic?emocao=${encodeURIComponent(emocao)}`;
       const response = await fetch(apiUrl);
       if (!response.ok) {
         throw new Error(`Erro HTTP! Status: ${response.status}`);

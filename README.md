@@ -85,6 +85,38 @@ npm run dev
 
 Abra [http://localhost:5173](http://localhost:5173) no seu navegador
 
+## 🚀 Deploy no Vercel (Backend + Frontend)
+
+O projeto está configurado para deploy completo no Vercel com API routes serverless.
+
+### 1. Prepare o projeto
+
+- Certifique-se de que a pasta `api/` está na raiz do projeto
+- Copie `.env.example` para `.env` e configure para desenvolvimento local
+
+### 2. Deploy no Vercel
+
+1. **Conecte o repositório**:
+
+   - Vá para [vercel.com](https://vercel.com) e conecte seu GitHub
+   - Selecione o repositório do projeto
+
+2. **Configure as variáveis de ambiente**:
+
+   - `CLIENT_ID`: Seu Spotify Client ID
+   - `CLIENT_SECRET`: Seu Spotify Client Secret
+   - `VITE_API_URL`: Deixe vazio (usará `/api` automaticamente)
+
+3. **Deploy**:
+   - Clique em "Deploy"
+   - O Vercel detectará automaticamente o React + API routes
+
+### 3. Teste a aplicação
+
+Após o deploy, acesse a URL fornecida pelo Vercel. A aplicação funcionará completamente online!
+
+**Nota**: Para desenvolvimento local, mantenha `VITE_API_URL` vazio no `.env` e execute `node ApiMusica.js` para o backend local.
+
 ## 🎨 Design e UX
 
 - **Tema**: Gradientes roxo-rosa com elementos musicais
