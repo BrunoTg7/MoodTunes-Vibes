@@ -1,5 +1,8 @@
 import axios from "axios";
 
+const CLIENT_ID = process.env.CLIENT_ID || "9621477c77e34408ad5b4256d59bfd6d";
+const CLIENT_SECRET = process.env.CLIENT_SECRET || "98c164b6fcd7499095a836e4c7b2c3f7";
+
 function stripAccents(str) {
   return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }
@@ -205,7 +208,11 @@ export default async function handler(req, res) {
         popularity: t.rank || 0,
       }));
     } catch (e) {
-      console.error("Deezer search failed:", e.message);
+      console.error("Deezer search failed:", {
+        message: e.message,
+        status: e.response?.status,
+        data: e.response?.data?.message || e.response?.data
+      });
     }
 
     // Combinar e processar
