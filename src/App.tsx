@@ -80,7 +80,7 @@ function App() {
         throw new Error(`Erro HTTP! Status: ${response.status}`);
       }
       const data = await response.json();
-      setResults((data.musicas || []).map((track) => ({
+      setResults((data.musicas || []).map((track: any) => ({
         ...track,
         _embedUrl:
           track.source === "spotify"
@@ -319,8 +319,6 @@ function App() {
               </div>
               <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {results.map((track: any) => {
-                  const DeezerEmbedUrl = `https://www.deezer.com/embed/track/${track.id}?utm_source=generator&theme=0`;
-                  const deezerTrackLink = track.link || `https://www.deezer.com/track/${track.id}`;
                   const coverUrl =
                     track.cover ||
                     `https://placehold.co/640x640/5D36B4/ffffff?text=${
