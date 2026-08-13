@@ -222,15 +222,17 @@ export default async function handler(req, res) {
         }
       });
     } catch (e) {
-      console.error("Deezer search failed:", JSON.stringify({
+      const errorDetails = {
         message: e.message,
         code: e.code,
         errno: e.errno,
         syscall: e.syscall,
         hostname: e.hostname,
-        status: e.response?.status,
-        data: e.response?.data
-      }));
+        config_url: e.config?.url,
+        response_status: e.response?.status,
+        response_data: e.response?.data
+      };
+      console.error("Deezer search failed:", JSON.stringify(errorDetails, null, 2));
     }
 
     // Combinar e processar
