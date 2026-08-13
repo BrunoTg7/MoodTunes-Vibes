@@ -3,278 +3,147 @@ import axios from "axios";
 const CLIENT_ID = process.env.CLIENT_ID || "9621477c77e34408ad5b4256d59bfd6d";
 const CLIENT_SECRET = process.env.CLIENT_SECRET || "98c164b6fcd7499095a836e4c7b2c3f7";
 
+const emotionKeywords = {
+  feliz: ["happy", "feliz", "alegre", "joy", "felicidade", "upbeat", "cheerful", "alegria"],
+  triste: ["sad", "triste", "tristeza", "melancolico", "depressed", "blue", "down"],
+  animado: ["energetic", "animado", "excited", "party", "dance", "festa", "high energy"],
+  relaxado: ["relax", "calm", "relaxado", "chill", "peaceful", "tranquilo", "soft"],
+  romântico: ["romantic", "romantico", "rometica", "romantica", "love", "amor", "romance", "tender", "sweet"],
+  motivado: ["motivated", "motivado", "inspiration", "inspiracao", "motivation", "drive"],
+  nostálgico: ["nostalgic", "nostalgico", "oldies", "classicos", "retro", "memories"],
+  calmo: ["calm", "calmo", "peace", "serene", "tranquil", "soothing", "gentle"],
+  apaixonado: ["passionate", "apaixonado", "intense", "deep love", "ardent"],
+  raivoso: ["angry", "raiva", "rage", "furious", "intense", "aggressive"],
+  ansioso: ["anxious", "ansioso", "nervous", "tension", "worry", "stress"],
+  confiante: ["confident", "confiante", "strong", "powerful", "bold", "empowered"],
+};
+
 function stripAccents(str) {
   return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }
 
-function getEmotionKeywords(emotionKeywords, emocao) {
-  const normalizedEmocao = stripAccents(emocao.toLowerCase());
-  const normalizedEntries = Object.entries(emotionKeywords).map(([key, kws]) => {
-    return [stripAccents(key.toLowerCase()), kws.map(k => stripAccents(k.toLowerCase()))];
-  });
-
-  const matched = normalizedEntries.find(([key, kws]) =>
-    kws.includes(normalizedEmocao) || key === normalizedEmocao
-  );
-
-  if (matched) {
-    return emotionKeywords[matched[0]] || emotionKeywords[matched[0]] || [emocao];
+function getEmotionKeywords(emocao) {
+  const normalized = stripAccents(emocao.toLowerCase());
+  for (const [key, kws] of Object.entries(emotionKeywords)) {
+    const nk = stripAccents(key.toLowerCase());
+    const nkw = kws.map(k => stripAccents(k.toLowerCase()));
+    if (nkw.includes(normalized) || nk === normalized) {
+      return kws;
+    }
   }
-
-  for (const [key, kws] of normalizedEntries) {
-    for (const kw of kws) {
-      if (kw.includes(normalizedEmocao) || normalizedEmocao.includes(kw)) {
-        return emotionKeywords[key] || [emocao];
+  for (const [key, kws] of Object.entries(emotionKeywords)) {
+    const nk = stripAccents(key.toLowerCase());
+    const nkw = kws.map(k => stripAccents(k.toLowerCase()));
+    for (const kw of nkw) {
+      if (kw.includes(normalized) || normalized.includes(kw)) {
+        return emotionKeywords[key];
       }
     }
   }
-
   return [emocao];
 }
 
 export default async function handler(req, res) {
-  console.log("[Handler] Starting request for emocao:", req.query.emocao);
-  // Enable CORS
+  console.error("[Handler] Start:", req.query.emocao);
+  
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
-  if (req.method === "OPTIONS") {
-    res.status(200).end();
-    return;
-  }
-
-  if (req.method !== "GET") {
-    res.status(405).json({ error: "Method not allowed" });
-    return;
-  }
+  if (req.method === "OPTIONS") return res.status(200).end();
+  if (req.method !== "GET") return res.status(405).json({ error: "Method not allowed" });
 
   const { emocao } = req.query;
-
-  if (!emocao) {
-    return res.status(400).json({ error: "Emoção não fornecida" });
-  }
+  if (!emocao) return res.status(400).json({ error: "Emoção não fornecida" });
 
   try {
-    console.log("[Handler] Starting request for emocao:", req.query.emocao);
-    // Mapeamento de emoções para termos de busca relacionados
-    const emotionKeywords = {
-      feliz: [
-        "happy",
-        "feliz",
-        "alegre",
-        "joy",
-        "felicidade",
-        "upbeat",
-        "cheerful",
-        "alegria",
-      ],
-      triste: [
-        "sad",
-        "triste",
-        "tristeza",
-        "melancólico",
-        "depressed",
-        "blue",
-        "down",
-      ],
-      animado: [
-        "energetic",
-        "animado",
-        "excited",
-        "party",
-        "dance",
-        "festa",
-        "high energy",
-      ],
-      relaxado: [
-        "relax",
-        "calm",
-        "relaxado",
-        "chill",
-        "peaceful",
-        "tranquilo",
-        "soft",
-      ],
-      romântico: [
-        "romantic",
-        "romantico",
-        "rometica",
-        "romântica",
-        "romantica",
-        "love",
-        "amor",
-        "romance",
-        "tender",
-        "sweet",
-      ],
-      motivado: [
-        "motivated",
-        "motivado",
-        "inspiration",
-        "inspiração",
-        "motivation",
-        "drive",
-      ],
-      nostálgico: [
-        "nostalgic",
-        "nostálgico",
-        "oldies",
-        "clássicos",
-        "retro",
-        "memories",
-      ],
-      calmo: [
-        "calm",
-        "calmo",
-        "peace",
-        "serene",
-        "tranquil",
-        "soothing",
-        "gentle",
-      ],
-      apaixonado: [
-        "passionate",
-        "apaixonado",
-        "intense",
-        "deep love",
-        "ardent",
-      ],
-      raivoso: ["angry", "raiva", "rage", "furious", "intense", "aggressive"],
-      ansioso: ["anxious", "ansioso", "nervous", "tension", "worry", "stress"],
-      confiante: [
-        "confident",
-        "confiante",
-        "strong",
-        "powerful",
-        "bold",
-        "empowered",
-      ],
-    };
-
-    // Obter token Spotify
+    const keywords = getEmotionKeywords(emocao).slice(0, 2); // apenas 2 keywords
     let spotifyTracks = [];
+    
+    // Spotify (opcional, com timeout curto)
     try {
-       const tokenResponse = await axios.post(
+      const tokenRes = await axios.post(
         "https://accounts.spotify.com/api/token",
-        new URLSearchParams({
-          grant_type: "client_credentials",
-          client_id: CLIENT_ID,
-          client_secret: CLIENT_SECRET,
-        }),
-        { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
+        new URLSearchParams({ grant_type: "client_credentials", client_id: CLIENT_ID, client_secret: CLIENT_SECRET }),
+        { headers: { "Content-Type": "application/x-www-form-urlencoded" }, timeout: 5000 }
       );
-      const token = tokenResponse.data.access_token;
-
-      // Buscar por termos relacionados na Spotify
-      const keywords = getEmotionKeywords(emotionKeywords, emocao);
-      const spotifySearches = keywords.map((kw) =>
+      const token = tokenRes.data.access_token;
+      
+      const searches = keywords.map(kw => 
         axios.get("https://api.spotify.com/v1/search", {
           params: { q: kw, type: "track", limit: 5 },
           headers: { Authorization: `Bearer ${token}` },
-        })
+          timeout: 3000
+        }).catch(() => ({ data: { tracks: { items: [] } } }))
       );
-      const spotifyResults = await Promise.all(spotifySearches);
-      spotifyTracks = [].concat(...spotifyResults).map((t) => ({
-        nome: t.name,
-        artista: t.artists[0].name,
-        id: t.id,
-        link: t.external_urls?.spotify,
-        cover: t.album?.images?.[0]?.url || null,
-        preview_url: t.preview_url,
-        source: "spotify",
-        popularity: t.popularity,
-      }));
+      
+      const results = await Promise.allSettled(searches);
+      for (const r of results) {
+        if (r.status === "fulfilled" && r.value.data.tracks?.items) {
+          for (const t of r.value.data.tracks.items) {
+            spotifyTracks.push({
+              nome: t.name,
+              artista: t.artists?.[0]?.name || "Unknown",
+              id: t.id,
+              link: t.external_urls?.spotify,
+              cover: t.album?.images?.[0]?.url || null,
+              preview_url: t.preview_url,
+              source: "spotify",
+              popularity: t.popularity || 0,
+            });
+          }
+        }
+      }
     } catch (e) {
-      console.error("Spotify search failed:", e.message);
+      console.error("Spotify error:", e.message);
     }
 
-    // Deezer search por termos relacionados
-    console.log("[Handler] Starting Deezer search for:", emocao);
-    console.log("[Handler] Starting Deezer search for:", emocao);
+    // Deezer (principal, com timeout)
     let deezerTracks = [];
     try {
-      const keywords = getEmotionKeywords(emotionKeywords, emocao);
-      const deezerSearches = keywords.map((kw) =>
+      const searches = keywords.map(kw =>
         axios.get(`https://api.deezer.com/search/track?q=${encodeURIComponent(kw)}`, {
           headers: { "User-Agent": "Mozilla/5.0" },
-          timeout: 15000,
-        })
+          timeout: 5000
+        }).catch(() => ({ data: { data: [] } }))
       );
-      const deezerResults = await Promise.allSettled(deezerSearches);
-      const successfulResults = deezerResults
-        .filter(r => r.status === 'fulfilled')
-        .map(r => r.value.data);
-      deezerTracks = [].concat(...successfulResults).map((t) => ({
-        nome: t.title,
-        artista: t.artist.name,
-        id: t.id,
-        link: t.link,
-        cover: t.album?.cover_big || t.album?.cover_medium || t.album?.cover || "https://placehold.co/640x640/5D36B4/ffffff?text=No+Image",
-        preview_url: t.preview,
-        source: "deezer",
-        popularity: t.rank || 0,
-      }));
-      console.log("[Deezer] Got", deezerTracks.length, "tracks from", deezerResults.length, "requests");
-      deezerResults.forEach((r, i) => {
-        if (r.status === 'rejected') {
-          console.error("[Deezer] Request rejected:", JSON.stringify({
-            keyword: keywords[i],
-            reason: r.reason?.message,
-            code: r.reason?.code
-          }));
+      
+      const results = await Promise.allSettled(searches);
+      for (const r of results) {
+        if (r.status === "fulfilled" && r.value.data?.data) {
+          for (const t of r.value.data.data) {
+            deezerTracks.push({
+              nome: t.title,
+              artista: t.artist?.name || "Unknown",
+              id: t.id,
+              link: t.link,
+              cover: t.album?.cover_big || t.album?.cover_medium || t.album?.cover || "https://placehold.co/640x640/5D36B4/ffffff?text=No+Image",
+              preview_url: t.preview,
+              source: "deezer",
+              popularity: t.rank || 0,
+            });
+          }
         }
-      });
-    } catch (e) {
-      const errorDetails = {
-        message: e.message,
-        code: e.code,
-        errno: e.errno,
-        syscall: e.syscall,
-        hostname: e.hostname,
-        config_url: e.config?.url,
-        response_status: e.response?.status,
-        response_data: e.response?.data
-      };
-      console.error("Deezer search failed:", JSON.stringify(errorDetails, null, 2));
-    }
-
-    // Combinar e processar
-    const allTracks = [...spotifyTracks, ...deezerTracks];
-
-    // Normalizar popularidade (Spotify: 0-100, Deezer: rank ~0-1M)
-    const normalizeScore = (track) => {
-      if (track.source === "spotify") return track.popularity || 0;
-      if (track.source === "deezer") return Math.min((track.popularity || 0) / 10000, 100);
-      return 0;
-    };
-
-    allTracks.sort((a, b) => {
-      if (a.source === "deezer" && b.source === "spotify") return normalizeScore(b) - normalizeScore(a);
-      if (a.source === "spotify" && b.source === "deezer") return normalizeScore(b) - normalizeScore(a);
-      return normalizeScore(b) - normalizeScore(a);
-    });
-
-    // Deduplicar por ID
-    const seenIds = new Set();
-    const uniqueTracks = [];
-    for (const track of allTracks) {
-      if (!seenIds.has(track.id)) {
-        seenIds.add(track.id);
-        uniqueTracks.push(track);
       }
+      console.error("[Handler] Deezer got:", deezerTracks.length, "tracks");
+    } catch (e) {
+      console.error("Deezer error:", e.message, e.code);
     }
 
-    // Limitar a top 20
-    const topTracks = uniqueTracks.slice(0, 20);
-
-    res.json({
-      emocao: emocao,
-      quantidade: topTracks.length,
-      musicas: topTracks,
-    });
-  } catch (error) {
-    console.error("Error:", error);
-    res.status(500).json({ error: "Erro interno do servidor" });
+    // Combine
+    const allTracks = [...spotifyTracks, ...deezerTracks];
+    const score = t => t.source === "spotify" ? t.popularity || 0 : Math.min((t.popularity || 0) / 10000, 100);
+    allTracks.sort((a, b) => score(b) - score(a));
+    
+    const seen = new Set();
+    const unique = [];
+    for (const t of allTracks) {
+      if (!seen.has(t.id)) { seen.add(t.id); unique.push(t); }
+    }
+    
+    return res.json({ emocao, quantidade: unique.slice(0, 20).length, musicas: unique.slice(0, 20) });
+  } catch (e) {
+    console.error("Error:", e);
+    res.status(500).json({ error: "Erro interno" });
   }
 }
