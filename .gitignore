@@ -28,3 +28,5 @@ dist-ssr
 cdenv.txt
 env.txt
 .env.local
+
+.vercel

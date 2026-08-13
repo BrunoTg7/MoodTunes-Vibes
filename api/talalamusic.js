@@ -208,11 +208,12 @@ export default async function handler(req, res) {
         popularity: t.rank || 0,
       }));
     } catch (e) {
-      console.error("Deezer search failed:", {
+      console.error("Deezer search failed:", JSON.stringify({
         message: e.message,
+        code: e.code,
         status: e.response?.status,
-        data: e.response?.data?.message || e.response?.data
-      });
+        data: e.response?.data
+      }));
     }
 
     // Combinar e processar
