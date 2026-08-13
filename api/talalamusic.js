@@ -225,6 +225,9 @@ export default async function handler(req, res) {
       console.error("Deezer search failed:", JSON.stringify({
         message: e.message,
         code: e.code,
+        errno: e.errno,
+        syscall: e.syscall,
+        hostname: e.hostname,
         status: e.response?.status,
         data: e.response?.data
       }));
