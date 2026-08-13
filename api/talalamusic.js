@@ -33,6 +33,7 @@ function getEmotionKeywords(emotionKeywords, emocao) {
 }
 
 export default async function handler(req, res) {
+  console.log("[Handler] Starting request for emocao:", req.query.emocao);
   // Enable CORS
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
@@ -188,6 +189,7 @@ export default async function handler(req, res) {
     }
 
     // Deezer search por termos relacionados
+    console.log("[Handler] Starting Deezer search for:", emocao);
     let deezerTracks = [];
     try {
       const keywords = getEmotionKeywords(emotionKeywords, emocao);
