@@ -14,9 +14,11 @@ function App() {
   const [floatingIcons, setFloatingIcons] = useState<any[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const vantaRef = useRef<any>(null);
+  const vantaInitRef = useRef(false);
   useEffect(() => {
+    if (vantaInitRef.current) return;
+    
     const initVanta = async () => {
-      // THREE is already imported and globally available at the top
       const GLOBE = (await import("vanta/dist/vanta.globe.min")).default;
       const bgElement = document.getElementById("vanta-bg");
       if (!bgElement || vantaRef.current) {
@@ -24,7 +26,6 @@ function App() {
       }
 
       try {
-        console.log("GLOBE:", GLOBE);
         vantaRef.current = GLOBE({
           el: bgElement,
           THREE: THREE,
@@ -42,14 +43,7 @@ function App() {
           points: 20.0,
         });
 
-        console.log("Vanta inicializado com sucesso");
-
-        return () => {
-          if (vantaRef.current) {
-            vantaRef.current.destroy();
-            vantaRef.current = null;
-          }
-        };
+        vantaInitRef.current = true;
       } catch (error) {
         console.error("Erro ao inicializar Vanta:", error);
       }
@@ -86,7 +80,19 @@ function App() {
         throw new Error(`Erro HTTP! Status: ${response.status}`);
       }
       const data = await response.json();
-      setResults(data.musicas || []);
+      setResults((data.musicas || []).map((track) => ({
+        ...track,
+        _embedUrl:
+          track.source === "spotify"
+            ? `https://open.spotify.com/embed/track/${track.id}?utm_source=generator`
+            : `https://widget.deezer.com/widget/dark/0/${track.id}`,
+        _trackLink:
+          track.source === "spotify"
+            ? `https://open.spotify.com/track/${track.id}`
+            : `https://www.deezer.com/track/${track.id}`,
+        _buttonText:
+          track.source === "spotify" ? "Abrir no Spotify" : "Abrir no Deezer",
+      })));
       setResponseEmotion(data.emocao || emocao);
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -313,9 +319,8 @@ function App() {
               </div>
               <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {results.map((track: any) => {
-                  const spotifyEmbedUrl = `https://open.spotify.com/embed/track/${track.id}?utm_source=generator&theme=0`;
-                  const spotifyTrackLink =
-                    track.link || `https://open.spotify.com/track/${track.id}`;
+                  const DeezerEmbedUrl = `https://www.deezer.com/embed/track/${track.id}?utm_source=generator&theme=0`;
+                  const deezerTrackLink = track.link || `https://www.deezer.com/track/${track.id}`;
                   const coverUrl =
                     track.cover ||
                     `https://placehold.co/640x640/5D36B4/ffffff?text=${
@@ -342,7 +347,7 @@ function App() {
                           className={`absolute inset-0 z-0 opacity-80 ${bgColor}`}
                         ></div>
                         <a
-                          href={spotifyTrackLink}
+                          href={track._trackLink}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="block relative z-10 cursor-pointer"
@@ -356,7 +361,9 @@ function App() {
                                 "https://placehold.co/640x640/5D36B4/ffffff?text=Música";
                             }}
                           />
-                          <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
+                          <div
+                            className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20"
+                          >
                             <button className="bg-white rounded-full p-2 shadow-xl transform transition-all duration-300 hover:scale-110 active:scale-90">
                               <svg
                                 className="w-6 h-6 text-purple-600"
@@ -387,7 +394,7 @@ function App() {
                         </p>
                       </div>
                       <a
-                        href={spotifyTrackLink}
+                        href={track._trackLink}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="w-full mt-auto bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white px-3 py-2 rounded-xl font-bold transition-all transform hover:scale-105 active:scale-95 shadow-md flex items-center justify-center"
@@ -408,17 +415,17 @@ function App() {
                           <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3z"></path>
                           <line x1="3" y1="10" x2="3" y2="10"></line>
                         </svg>
-                        Abrir no Spotify
+                        {track._buttonText}
                       </a>
                       <iframe
-                        src={spotifyEmbedUrl}
+                        src={track._embedUrl}
                         width="100%"
-                        height="120"
+                        height="160"
                         frameBorder="0"
-                        allowTransparency={true}
+                        allow="autoplay"
                         className="rounded-lg mt-2"
-                        style={{ display: "block", minHeight: "120px" }}
-                      ></iframe>
+                        style={{ display: "block", minHeight: "160px" }}
+                     ></iframe>
                     </div>
                   );
                 })}

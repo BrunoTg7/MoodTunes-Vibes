@@ -1,5 +1,33 @@
 import axios from "axios";
-import querystring from "querystring";
+
+function stripAccents(str) {
+  return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
+
+function getEmotionKeywords(emotionKeywords, emocao) {
+  const normalizedEmocao = stripAccents(emocao.toLowerCase());
+  const normalizedEntries = Object.entries(emotionKeywords).map(([key, kws]) => {
+    return [stripAccents(key.toLowerCase()), kws.map(k => stripAccents(k.toLowerCase()))];
+  });
+
+  const matched = normalizedEntries.find(([key, kws]) =>
+    kws.includes(normalizedEmocao) || key === normalizedEmocao
+  );
+
+  if (matched) {
+    return emotionKeywords[matched[0]] || emotionKeywords[matched[0]] || [emocao];
+  }
+
+  for (const [key, kws] of normalizedEntries) {
+    for (const kw of kws) {
+      if (kw.includes(normalizedEmocao) || normalizedEmocao.includes(kw)) {
+        return emotionKeywords[key] || [emocao];
+      }
+    }
+  }
+
+  return [emocao];
+}
 
 export default async function handler(req, res) {
   // Enable CORS
@@ -24,19 +52,6 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Gera token via Client Credentials
-    const tokenResponse = await axios.post(
-      "https://accounts.spotify.com/api/token",
-      querystring.stringify({
-        grant_type: "client_credentials",
-        client_id: process.env.CLIENT_ID,
-        client_secret: process.env.CLIENT_SECRET,
-      }),
-      { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
-    );
-
-    const access_token = tokenResponse.data.access_token;
-
     // Mapeamento de emoções para termos de busca relacionados
     const emotionKeywords = {
       feliz: [
@@ -47,6 +62,7 @@ export default async function handler(req, res) {
         "felicidade",
         "upbeat",
         "cheerful",
+        "alegria",
       ],
       triste: [
         "sad",
@@ -77,7 +93,10 @@ export default async function handler(req, res) {
       ],
       romântico: [
         "romantic",
-        "romântico",
+        "romantico",
+        "rometica",
+        "romântica",
+        "romantica",
         "love",
         "amor",
         "romance",
@@ -128,82 +147,100 @@ export default async function handler(req, res) {
       ],
     };
 
-    // Busca múltiplas vezes com diferentes termos relacionados
-    const allTracks = [];
-    const usedTrackIds = new Set();
-
-    // Primeiro busca pela emoção exata
+    // Obter token Spotify
+    let spotifyTracks = [];
     try {
-      const mainSearchResponse = await axios.get(
-        "https://api.spotify.com/v1/search",
-        {
-          headers: { Authorization: `Bearer ${access_token}` },
-          params: {
-            q: emocao,
-            type: "track",
-            limit: 20,
-          },
-        }
+      const tokenResponse = await axios.post(
+        "https://accounts.spotify.com/api/token",
+        new URLSearchParams({
+          grant_type: "client_credentials",
+          client_id: process.env.CLIENT_ID || " ",
+          client_secret: process.env.CLIENT_SECRET || " ",
+        }),
+        { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
       );
+      const token = tokenResponse.data.access_token;
 
-      for (const track of mainSearchResponse.data.tracks.items) {
-        if (!usedTrackIds.has(track.id)) {
-          allTracks.push(track);
-          usedTrackIds.add(track.id);
-        }
-      }
-    } catch (error) {
-      console.log("Erro na busca principal:", error.message);
+      // Buscar por termos relacionados na Spotify
+      const keywords = getEmotionKeywords(emotionKeywords, emocao);
+      const spotifySearches = keywords.map((kw) =>
+        axios.get("https://api.spotify.com/v1/search", {
+          params: { q: kw, type: "track", limit: 5 },
+          headers: { Authorization: `Bearer ${token}` },
+        })
+      );
+      const spotifyResults = await Promise.all(spotifySearches);
+      spotifyTracks = [].concat(...spotifyResults).map((t) => ({
+        nome: t.name,
+        artista: t.artists[0].name,
+        id: t.id,
+        link: t.external_urls?.spotify,
+        cover: t.album?.images?.[0]?.url || null,
+        preview_url: t.preview_url,
+        source: "spotify",
+        popularity: t.popularity,
+      }));
+    } catch (e) {
+      console.error("Spotify search failed:", e.message);
     }
 
-    // Busca por termos relacionados em inglês
-    const relatedTerms = emotionKeywords[emocao.toLowerCase()] || [emocao];
+    // Deezer search por termos relacionados
+    let deezerTracks = [];
+    try {
+      const keywords = getEmotionKeywords(emotionKeywords, emocao);
+      const deezerSearches = keywords.map((kw) =>
+        axios.get(`https://api.deezer.com/search/track?q=${encodeURIComponent(kw)}`, {
+          headers: { "User-Agent": "Mozilla/5.0" },
+        })
+      );
+      const deezerResults = await Promise.all(deezerSearches);
+      deezerTracks = [].concat(...deezerResults).map((t) => ({
+        nome: t.title,
+        artista: t.artist.name,
+        id: t.id,
+        link: t.link,
+        cover: t.album?.cover_big || t.album?.cover_medium || t.album?.cover || "https://placehold.co/640x640/5D36B4/ffffff?text=No+Image",
+        preview_url: t.preview,
+        source: "deezer",
+        popularity: t.rank || 0,
+      }));
+    } catch (e) {
+      console.error("Deezer search failed:", e.message);
+    }
 
-    for (const term of relatedTerms.slice(0, 3)) {
-      // Limita a 3 termos para não sobrecarregar
-      try {
-        const relatedSearchResponse = await axios.get(
-          "https://api.spotify.com/v1/search",
-          {
-            headers: { Authorization: `Bearer ${access_token}` },
-            params: {
-              q: term,
-              type: "track",
-              limit: 15,
-            },
-          }
-        );
+    // Combinar e processar
+    const allTracks = [...spotifyTracks, ...deezerTracks];
 
-        for (const track of relatedSearchResponse.data.tracks.items) {
-          if (!usedTrackIds.has(track.id)) {
-            allTracks.push(track);
-            usedTrackIds.add(track.id);
-          }
-        }
-      } catch (error) {
-        console.log(`Erro na busca por "${term}":`, error.message);
+    // Normalizar popularidade (Spotify: 0-100, Deezer: rank ~0-1M)
+    const normalizeScore = (track) => {
+      if (track.source === "spotify") return track.popularity || 0;
+      if (track.source === "deezer") return Math.min((track.popularity || 0) / 10000, 100);
+      return 0;
+    };
+
+    allTracks.sort((a, b) => {
+      if (a.source === "deezer" && b.source === "spotify") return normalizeScore(b) - normalizeScore(a);
+      if (a.source === "spotify" && b.source === "deezer") return normalizeScore(b) - normalizeScore(a);
+      return normalizeScore(b) - normalizeScore(a);
+    });
+
+    // Deduplicar por ID
+    const seenIds = new Set();
+    const uniqueTracks = [];
+    for (const track of allTracks) {
+      if (!seenIds.has(track.id)) {
+        seenIds.add(track.id);
+        uniqueTracks.push(track);
       }
     }
 
-    // Limita a 50 músicas no total
-    const tracks = allTracks.slice(0, 50);
-
-    const resultado = tracks.map((track) => ({
-      nome: track.name,
-      artista: track.artists[0].name,
-      id: track.id,
-      link: track.external_urls.spotify,
-      cover:
-        track.album && track.album.images && track.album.images.length > 0
-          ? track.album.images[0].url
-          : null,
-      preview_url: track.preview_url,
-    }));
+    // Limitar a top 20
+    const topTracks = uniqueTracks.slice(0, 20);
 
     res.json({
       emocao: emocao,
-      quantidade: resultado.length,
-      musicas: resultado,
+      quantidade: topTracks.length,
+      musicas: topTracks,
     });
   } catch (error) {
     console.error("Error:", error);
