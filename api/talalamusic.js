@@ -153,12 +153,12 @@ export default async function handler(req, res) {
     // Obter token Spotify
     let spotifyTracks = [];
     try {
-      const tokenResponse = await axios.post(
+       const tokenResponse = await axios.post(
         "https://accounts.spotify.com/api/token",
         new URLSearchParams({
           grant_type: "client_credentials",
-          client_id: process.env.CLIENT_ID || " ",
-          client_secret: process.env.CLIENT_SECRET || " ",
+          client_id: CLIENT_ID,
+          client_secret: CLIENT_SECRET,
         }),
         { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
       );
