@@ -194,10 +194,14 @@ export default async function handler(req, res) {
       const deezerSearches = keywords.map((kw) =>
         axios.get(`https://api.deezer.com/search/track?q=${encodeURIComponent(kw)}`, {
           headers: { "User-Agent": "Mozilla/5.0" },
+          timeout: 15000,
         })
       );
-      const deezerResults = await Promise.all(deezerSearches);
-      deezerTracks = [].concat(...deezerResults).map((t) => ({
+      const deezerResults = await Promise.allSettled(deezerSearches);
+      const successfulResults = deezerResults
+        .filter(r => r.status === 'fulfilled')
+        .map(r => r.value.data);
+      deezerTracks = [].concat(...successfulResults).map((t) => ({
         nome: t.title,
         artista: t.artist.name,
         id: t.id,
@@ -207,6 +211,16 @@ export default async function handler(req, res) {
         source: "deezer",
         popularity: t.rank || 0,
       }));
+      console.log("[Deezer] Got", deezerTracks.length, "tracks from", deezerResults.length, "requests");
+      deezerResults.forEach((r, i) => {
+        if (r.status === 'rejected') {
+          console.error("[Deezer] Request rejected:", JSON.stringify({
+            keyword: keywords[i],
+            reason: r.reason?.message,
+            code: r.reason?.code
+          }));
+        }
+      });
     } catch (e) {
       console.error("Deezer search failed:", JSON.stringify({
         message: e.message,
