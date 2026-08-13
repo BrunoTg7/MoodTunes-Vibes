@@ -56,6 +56,7 @@ export default async function handler(req, res) {
   }
 
   try {
+    console.log("[Handler] Starting request for emocao:", req.query.emocao);
     // Mapeamento de emoções para termos de busca relacionados
     const emotionKeywords = {
       feliz: [
@@ -189,6 +190,7 @@ export default async function handler(req, res) {
     }
 
     // Deezer search por termos relacionados
+    console.log("[Handler] Starting Deezer search for:", emocao);
     console.log("[Handler] Starting Deezer search for:", emocao);
     let deezerTracks = [];
     try {
